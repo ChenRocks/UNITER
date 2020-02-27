@@ -66,7 +66,7 @@ def nlvr2_paired_collate(inputs):
     txt_lens = [i.size(0) for i in input_ids]
     input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
     position_ids = torch.arange(0, input_ids.size(1), dtype=torch.long
-                                ).unsqueeze(0).expand_as(input_ids)
+                                ).unsqueeze(0)
 
     # image batches
     num_bbs = [f.size(0) for f in img_feats]
@@ -173,7 +173,7 @@ def nlvr2_triplet_collate(inputs):
     txt_lens = [i.size(0) for i in input_ids]
     input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
     position_ids = torch.arange(0, input_ids.size(1), dtype=torch.long
-                                ).unsqueeze(0).expand_as(input_ids)
+                                ).unsqueeze(0)
 
     # image batches
     num_bbs = [f.size(0) for f in img_feats]
