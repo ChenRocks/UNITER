@@ -11,7 +11,7 @@ import torch
 
 def move_to_cuda(batch):
     if isinstance(batch, torch.Tensor):
-        return batch.cuda()
+        return batch.cuda(non_blocking=True)
     elif isinstance(batch, list):
         new_batch = [move_to_cuda(t) for t in batch]
     elif isinstance(batch, tuple):
