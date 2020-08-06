@@ -4,6 +4,8 @@ Licensed under the MIT license.
 
 Uniter for NLVR2 model
 """
+from collections import defaultdict
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -31,9 +33,15 @@ class UniterForNlvr2Paired(UniterPreTrainedModel):
         new_emb.weight.data[2, :].copy_(emb)
         self.uniter.embeddings.token_type_embeddings = new_emb
 
-    def forward(self, input_ids, position_ids, img_feat, img_pos_feat,
-                attn_masks, gather_index,
-                img_type_ids, targets, compute_loss=True):
+    def forward(self, batch, compute_loss=True):
+        batch = defaultdict(lambda: None, batch)
+        input_ids = batch['input_ids']
+        position_ids = batch['position_ids']
+        img_feat = batch['img_feat']
+        img_pos_feat = batch['img_pos_feat']
+        attn_masks = batch['attn_masks']
+        gather_index = batch['gather_index']
+        img_type_ids = batch['img_type_ids']
         sequence_output = self.uniter(input_ids, position_ids,
                                       img_feat, img_pos_feat,
                                       attn_masks, gather_index,
@@ -46,6 +54,7 @@ class UniterForNlvr2Paired(UniterPreTrainedModel):
         answer_scores = self.nlvr2_output(reshaped_output)
 
         if compute_loss:
+            targets = batch['targets']
             nlvr2_loss = F.cross_entropy(
                 answer_scores, targets, reduction='none')
             return nlvr2_loss
@@ -72,9 +81,15 @@ class UniterForNlvr2Triplet(UniterPreTrainedModel):
         new_emb.weight.data[2, :].copy_(emb)
         self.uniter.embeddings.token_type_embeddings = new_emb
 
-    def forward(self, input_ids, position_ids, img_feat, img_pos_feat,
-                attn_masks, gather_index,
-                img_type_ids, targets, compute_loss=True):
+    def forward(self, batch, compute_loss=True):
+        batch = defaultdict(lambda: None, batch)
+        input_ids = batch['input_ids']
+        position_ids = batch['position_ids']
+        img_feat = batch['img_feat']
+        img_pos_feat = batch['img_pos_feat']
+        attn_masks = batch['attn_masks']
+        gather_index = batch['gather_index']
+        img_type_ids = batch['img_type_ids']
         sequence_output = self.uniter(input_ids, position_ids,
                                       img_feat, img_pos_feat,
                                       attn_masks, gather_index,
@@ -84,6 +99,7 @@ class UniterForNlvr2Triplet(UniterPreTrainedModel):
         answer_scores = self.nlvr2_output(pooled_output)
 
         if compute_loss:
+            targets = batch['targets']
             nlvr2_loss = F.cross_entropy(
                 answer_scores, targets, reduction='none')
             return nlvr2_loss
@@ -141,9 +157,15 @@ class UniterForNlvr2PairedAttn(UniterPreTrainedModel):
         new_emb.weight.data[2, :].copy_(emb)
         self.uniter.embeddings.token_type_embeddings = new_emb
 
-    def forward(self, input_ids, position_ids, img_feat, img_pos_feat,
-                attn_masks, gather_index,
-                img_type_ids, targets, compute_loss=True):
+    def forward(self, batch, compute_loss=True):
+        batch = defaultdict(lambda: None, batch)
+        input_ids = batch['input_ids']
+        position_ids = batch['position_ids']
+        img_feat = batch['img_feat']
+        img_pos_feat = batch['img_pos_feat']
+        attn_masks = batch['attn_masks']
+        gather_index = batch['gather_index']
+        img_type_ids = batch['img_type_ids']
         sequence_output = self.uniter(input_ids, position_ids,
                                       img_feat, img_pos_feat,
                                       attn_masks, gather_index,
@@ -174,6 +196,7 @@ class UniterForNlvr2PairedAttn(UniterPreTrainedModel):
             torch.cat([left_out, right_out], dim=-1))
 
         if compute_loss:
+            targets = batch['targets']
             nlvr2_loss = F.cross_entropy(
                 answer_scores, targets, reduction='none')
             return nlvr2_loss

@@ -15,7 +15,7 @@ from .model import UniterPreTrainedModel, UniterModel
 
 
 class UniterForVisualQuestionAnswering(UniterPreTrainedModel):
-    """ Finetune multi-modal BERT for VQA
+    """ Finetune UNITER for VQA
     """
     def __init__(self, config, img_dim, num_answer):
         super().__init__(config)

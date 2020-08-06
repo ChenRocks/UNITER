@@ -38,20 +38,11 @@ def compute_num_bb(confs, conf_th, min_bb, max_bb):
 
 def _check_distributed():
     try:
-        dist = hvd.size() != hvd.local_size
+        dist = hvd.size() != hvd.local_size()
     except ValueError:
         # not using horovod
         dist = False
     return dist
-
-
-def _null():
-    return None
-
-
-def default_none_dict(dictionary):
-    """ make picklable default dict """
-    return defaultdict(_null, dictionary)
 
 
 class DetectFeatLmdb(object):

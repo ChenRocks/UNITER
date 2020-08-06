@@ -12,8 +12,7 @@ from toolz.sandbox import unzip
 from cytoolz import concat
 
 from .data import (DetectFeatTxtTokDataset, TxtTokLmdb, DetectFeatLmdb,
-                   get_ids_and_lens, pad_tensors, get_gather_index,
-                   default_none_dict)
+                   get_ids_and_lens, pad_tensors, get_gather_index)
 
 
 class Nlvr2PairedDataset(DetectFeatTxtTokDataset):
@@ -93,7 +92,6 @@ def nlvr2_paired_collate(inputs):
              'gather_index': gather_index,
              'img_type_ids': img_type_ids,
              'targets': targets}
-    batch = default_none_dict(batch)
     return batch
 
 
@@ -200,7 +198,6 @@ def nlvr2_triplet_collate(inputs):
              'gather_index': gather_index,
              'img_type_ids': img_type_ids,
              'targets': targets}
-    batch = default_none_dict(batch)
     return batch
 
 

@@ -5,7 +5,7 @@ Licensed under the MIT license.
 """
 from .data import (TxtTokLmdb, DetectFeatLmdb,
                    ImageLmdbGroup, ConcatDatasetWithLens)
-from .sampler import TokenBucketSampler, DistributedTokenBucketSampler
+from .sampler import TokenBucketSampler
 from .loader import PrefetchLoader
 from .vqa import VqaDataset, VqaEvalDataset, vqa_collate, vqa_eval_collate
 from .nlvr2 import (Nlvr2PairedDataset, Nlvr2PairedEvalDataset,

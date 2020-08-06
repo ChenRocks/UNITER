@@ -56,13 +56,3 @@ class TokenBucketSampler(Sampler):
     def __len__(self):
         raise ValueError("NOT supported. "
                          "This has some randomness across epochs")
-
-
-class DistributedTokenBucketSampler(TokenBucketSampler):
-    def __init__(self, num_replicas, rank, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._rank = rank
-        self._num_replicas = num_replicas
-
-    def _create_ids(self):
-        return super()._create_ids()[self._rank::self._num_replicas]

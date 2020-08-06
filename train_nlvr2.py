@@ -19,7 +19,7 @@ from horovod import torch as hvd
 
 from tqdm import tqdm
 
-from data import (DistributedTokenBucketSampler, DetectFeatLmdb, TxtTokLmdb,
+from data import (TokenBucketSampler, DetectFeatLmdb, TxtTokLmdb,
                   Nlvr2PairedDataset, Nlvr2PairedEvalDataset,
                   Nlvr2TripletDataset, Nlvr2TripletEvalDataset,
                   nlvr2_paired_collate, nlvr2_paired_eval_collate,
@@ -44,9 +44,8 @@ def create_dataloader(img_path, txt_path, batch_size, is_train,
                             opts.num_bb, opts.compressed_db)
     txt_db = TxtTokLmdb(txt_path, opts.max_txt_len if is_train else -1)
     dset = dset_cls(txt_db, img_db, opts.use_img_type)
-    sampler = DistributedTokenBucketSampler(
-        hvd.size(), hvd.rank(), dset.lens,
-        bucket_size=BUCKET_SIZE, batch_size=batch_size, droplast=is_train)
+    sampler = TokenBucketSampler(dset.lens, bucket_size=BUCKET_SIZE,
+                                 batch_size=batch_size, droplast=is_train)
     loader = DataLoader(dset, batch_sampler=sampler,
                         num_workers=opts.n_workers, pin_memory=opts.pin_mem,
                         collate_fn=collate_fn)
@@ -73,7 +72,7 @@ def main(opts):
 
     # train_examples = None
     LOGGER.info(f"Loading Train Dataset {opts.train_txt_db}, "
-                f"{opts.train_img_dir}")
+                f"{opts.train_img_db}")
     if 'paired' in opts.model:
         DatasetCls = Nlvr2PairedDataset
         EvalDatasetCls = Nlvr2PairedEvalDataset
@@ -156,7 +155,7 @@ def main(opts):
             targets = batch['targets']
             n_examples += targets.size(0)
 
-            loss = model(**batch, compute_loss=True)
+            loss = model(batch, compute_loss=True)
             loss = loss.mean()
             delay_unscale = (step+1) % opts.gradient_accumulation_steps != 0
             with amp.scale_loss(loss, optimizer, delay_unscale=delay_unscale
@@ -182,9 +181,7 @@ def main(opts):
                 TB_LOGGER.add_scalar('lr', lr_this_step, global_step)
 
                 # log loss
-                losses = all_gather_list(running_loss)
-                running_loss = RunningMeter(
-                    'loss', sum(l.val for l in losses)/len(losses))
+                # NOTE: not gathered across GPUs for efficiency
                 TB_LOGGER.add_scalar('loss', running_loss.val, global_step)
                 TB_LOGGER.step()
 
@@ -226,17 +223,19 @@ def main(opts):
             break
         n_epoch += 1
         LOGGER.info(f"Step {global_step}: finished {n_epoch} epochs")
-    for split, loader in [('val', val_dataloader), ('test', test_dataloader)]:
-        LOGGER.info(f"Step {global_step}: start running "
-                    f"validation on {split} split...")
-        log, results = validate(model, loader, split)
-        with open(f'{opts.output_dir}/results/'
-                  f'{split}_results_{global_step}_'
-                  f'rank{rank}_final.csv', 'w') as f:
-            for id_, ans in results:
-                f.write(f'{id_},{ans}\n')
-        TB_LOGGER.log_scaler_dict(log)
-    model_saver.save(model, f'{global_step}_final')
+    if opts.num_train_steps % opts.valid_steps != 0:
+        for split, loader in [('val', val_dataloader),
+                              ('test', test_dataloader)]:
+            LOGGER.info(f"Step {global_step}: start running "
+                        f"validation on {split} split...")
+            log, results = validate(model, loader, split)
+            with open(f'{opts.output_dir}/results/'
+                      f'{split}_results_{global_step}_'
+                      f'rank{rank}.csv', 'w') as f:
+                for id_, ans in results:
+                    f.write(f'{id_},{ans}\n')
+            TB_LOGGER.log_scaler_dict(log)
+        model_saver.save(model, global_step)
 
 
 @torch.no_grad()
@@ -252,7 +251,7 @@ def validate(model, val_loader, split):
         targets = batch['targets']
         del batch['targets']
         del batch['qids']
-        scores = model(**batch, targets=None, compute_loss=False)
+        scores = model(batch, compute_loss=False)
         loss = F.cross_entropy(scores, targets, reduction='sum')
         val_loss += loss.item()
         tot_score += (scores.max(dim=-1, keepdim=False)[1] == targets
@@ -284,19 +283,19 @@ if __name__ == "__main__":
     parser.add_argument("--train_txt_db",
                         default=None, type=str,
                         help="The input train corpus. (LMDB)")
-    parser.add_argument("--train_img_dir",
+    parser.add_argument("--train_img_db",
                         default=None, type=str,
                         help="The input train images.")
     parser.add_argument("--val_txt_db",
                         default=None, type=str,
                         help="The input validation corpus. (LMDB)")
-    parser.add_argument("--val_img_dir",
+    parser.add_argument("--val_img_db",
                         default=None, type=str,
                         help="The input validation images.")
     parser.add_argument("--test_txt_db",
                         default=None, type=str,
                         help="The input test corpus. (LMDB)")
-    parser.add_argument("--test_img_dir",
+    parser.add_argument("--test_img_db",
                         default=None, type=str,
                         help="The input test images.")
     parser.add_argument('--compressed_db', action='store_true',
