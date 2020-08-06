@@ -12,7 +12,7 @@ from os.path import exists
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, ConcatDataset
 import horovod.torch as hvd
 from tqdm import tqdm
 import lmdb
@@ -228,8 +228,8 @@ def get_ids_and_lens(db):
     assert isinstance(db, TxtTokLmdb)
     lens = []
     ids = []
-    for id_, len_ in db.id2len.items():
-        lens.append(len_)
+    for id_ in list(db.id2len.keys())[hvd.rank()::hvd.size()]:
+        lens.append(db.id2len[id_])
         ids.append(id_)
     return lens, ids
 
@@ -286,3 +286,36 @@ def get_gather_index(txt_lens, num_bbs, batch_size, max_len, out_size):
         gather_index.data[i, tl:tl+nbb] = torch.arange(max_len, max_len+nbb,
                                                        dtype=torch.long).data
     return gather_index
+
+
+class ConcatDatasetWithLens(ConcatDataset):
+    """ A thin wrapper on pytorch concat dataset for lens batching """
+    def __init__(self, datasets):
+        super().__init__(datasets)
+        self.lens = [l for dset in datasets for l in dset.lens]
+
+    def __getattr__(self, name):
+        return self._run_method_on_all_dsets(name)
+
+    def _run_method_on_all_dsets(self, name):
+        def run_all(*args, **kwargs):
+            return [dset.__getattribute__(name)(*args, **kwargs)
+                    for dset in self.datasets]
+        return run_all
+
+
+class ImageLmdbGroup(object):
+    def __init__(self, conf_th, max_bb, min_bb, num_bb, compress):
+        self.path2imgdb = {}
+        self.conf_th = conf_th
+        self.max_bb = max_bb
+        self.min_bb = min_bb
+        self.num_bb = num_bb
+        self.compress = compress
+
+    def __getitem__(self, path):
+        img_db = self.path2imgdb.get(path, None)
+        if img_db is None:
+            img_db = DetectFeatLmdb(path, self.conf_th, self.max_bb,
+                                    self.min_bb, self.num_bb, self.compress)
+        return img_db
