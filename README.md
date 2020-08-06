@@ -1,8 +1,10 @@
 # UNITER: UNiversal Image-TExt Representation Learning
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
 It is currently an alpha release, which supports finetuning UNITER-base on
-[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), and
-[SNLI-VE](https://github.com/necla-ml/SNLI-VE) tasks.
+[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/),
+[SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
+Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
+[Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
 We plan to release the large model and more downstream tasks but do not have a 
 time table as of now.
 
@@ -153,6 +155,37 @@ NOTE: train should be ran inside the docker container
     ```
     horovodrun -np 2 python train_ve.py --config config/train-ve-base-2gpu.json \
         --output_dir $VE_EXP
+    ```
+
+### Image-Text Retrieval
+download data
+```
+bash scripts/download_itm.sh $PATH_TO_STORAGE
+```
+NOTE: Image-Text Retrieval is computationally heavy, especially on COCO.
+#### Zero-shot Image-Text Retrieval (Flickr30k)
+```
+# every image-text pair has to be ranked; please use as many GPUs as possible
+horovodrun -np $NGPU python inf_itm.py \
+    --txt_db /txt/itm_flickr30k_test.db --img_db /img/flickr30k \
+    --checkpoint /pretrain/uniter-base.pt --model_config /src/config/uniter-base.json \
+    --output_dir $ZS_ITM_RESULT --fp16 --pin_mem
+```
+#### Image-Text Retrieval (Flickr30k)
+- normal finetune
+    ```
+    horovodrun -np 8 python train_itm.py --config config/train-itm-flickr-base-8gpu.json
+    ```
+- finetune with hard negatives
+    ```
+    horovodrun -np 16 python train_itm_hard_negatives.py \
+        --config config/train-itm-flickr-base-16gpu-hn.jgon
+    ```
+#### Image-Text Retrieval (COCO)
+- finetune with hard negatives
+    ```
+    horovodrun -np 16 python train_itm_hard_negatives.py \
+        --config config/train-itm-coco-base-16gpu-hn.json
     ```
 
 ## Citation
