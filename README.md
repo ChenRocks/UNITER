@@ -31,7 +31,7 @@ We use NLVR2 as an end-to-end example for using this code base.
 
 1. Download processed data and pretrained models with the following command.
     ```bash
-    bash scripts/download.sh $PATH_TO_STORAGE
+    bash scripts/download_nlvr2.sh $PATH_TO_STORAGE
     ```
     After downloading you should see the following folder structure:
     ```
