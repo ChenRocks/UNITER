@@ -6,7 +6,6 @@ distributed API using Horovod
 Modified from OpenNMT's native pytorch distributed utils
 (https://github.com/OpenNMT/OpenNMT-py)
 """
-
 import math
 import pickle
 
@@ -104,7 +103,7 @@ def broadcast_tensors(tensors, root_rank, buffer_size=10485760):
     Args:
         tensors: list of Tensors to broadcast
         root_rank: rank to broadcast
-        buffer_size: all-reduce chunk size in bytes
+        buffer_size: broadcast chunk size in bytes
     """
     # buffer size in bytes, determine equiv. # of elements based on data type
     buffer_t = tensors[0].new(
@@ -149,59 +148,58 @@ def broadcast_tensors(tensors, root_rank, buffer_size=10485760):
         broadcast_buffer()
 
 
-def all_gather_list(data, max_size=4096):
-    """Gathers arbitrary data from all nodes into a list."""
-    world_size = hvd.size()
-    if not hasattr(all_gather_list, '_in_buffer') or \
-            max_size != all_gather_list._in_buffer.size():
-        all_gather_list._in_buffer = torch.cuda.ByteTensor(max_size)
-    in_buffer = all_gather_list._in_buffer
-
-    enc = pickle.dumps(data)
+def _encode(enc, max_size):
     enc_size = len(enc)
-    if enc_size + 2 > max_size:
-        raise ValueError(
-            'encoded data exceeds max_size: {}'.format(enc_size + 2))
-    assert max_size < 255*256
-    in_buffer[0] = enc_size // 255  # this encoding works for max_size < 65k
-    in_buffer[1] = enc_size % 255
-    in_buffer[2:enc_size+2] = torch.ByteTensor(list(enc))
+    enc_byte = max(math.floor(math.log(max_size, 256)+1), 1)
+    buffer_ = torch.cuda.ByteTensor(enc_size+enc_byte)
+    remainder = enc_size
+    for i in range(enc_byte):
+        base = 256 ** (enc_byte-i-1)
+        buffer_[i] = remainder // base
+        remainder %= base
+    buffer_[enc_byte:enc_byte+enc_size] = torch.ByteTensor(list(enc))
+    return buffer_, enc_byte
 
-    # FIXME cannot create buffer
-    out = hvd.allgather(in_buffer.cuda())
+
+def _decode(buffer_, enc_byte):
+    size = sum(256 ** (enc_byte-i-1) * buffer_[i].item()
+               for i in range(enc_byte))
+    bytes_list = bytes(buffer_[enc_byte:enc_byte+size].tolist())
+    shift = size + enc_byte
+    return bytes_list, shift
+
+
+_BUFFER_SIZE = 4096
+
+
+def all_gather_list(data):
+    """Gathers arbitrary data from all nodes into a list."""
+    enc = pickle.dumps(data)
+
+    enc_size = len(enc)
+    max_size = hvd.allgather(torch.tensor([enc_size]).cuda()).max().item()
+    in_buffer, enc_byte = _encode(enc, max_size)
+
+    out_buffer = hvd.allgather(in_buffer[:enc_byte+enc_size])
 
     results = []
-    for i in range(0, max_size*world_size, max_size):
-        out_buffer = out[i:i+max_size]
-        size = (255 * out_buffer[0].item()) + out_buffer[1].item()
-
-        bytes_list = bytes(out_buffer[2:size+2].tolist())
+    for _ in range(hvd.size()):
+        bytes_list, shift = _decode(out_buffer, enc_byte)
+        out_buffer = out_buffer[shift:]
         result = pickle.loads(bytes_list)
         results.append(result)
     return results
 
 
-def any_broadcast(data, root_rank, max_size=4096):
+def any_broadcast(data, root_rank):
     """broadcast arbitrary data from root_rank to all nodes."""
-    if not hasattr(any_broadcast, '_in_buffer') or \
-            max_size != any_broadcast._in_buffer.size():
-        any_broadcast._buffer = torch.cuda.ByteTensor(max_size)
-    buffer_ = any_broadcast._buffer
-
     enc = pickle.dumps(data)
-    enc_size = len(enc)
-    if enc_size + 2 > max_size:
-        raise ValueError(
-            'encoded data exceeds max_size: {}'.format(enc_size + 2))
-    assert max_size < 255*256
-    buffer_[0] = enc_size // 255  # this encoding works for max_size < 65k
-    buffer_[1] = enc_size % 255
-    buffer_[2:enc_size+2] = torch.ByteTensor(list(enc))
+
+    max_size = hvd.allgather(torch.tensor([len(enc)]).cuda()).max().item()
+    buffer_, enc_byte = _encode(enc, max_size)
 
     hvd.broadcast_(buffer_, root_rank)
 
-    size = (255 * buffer_[0].item()) + buffer_[1].item()
-
-    bytes_list = bytes(buffer_[2:size+2].tolist())
+    bytes_list, _ = _decode(buffer_, enc_byte)
     result = pickle.loads(bytes_list)
     return result

@@ -44,6 +44,12 @@ def swish(x):
 ACT2FN = {"gelu": gelu, "relu": torch.nn.functional.relu, "swish": swish}
 
 
+class GELU(nn.Module):
+    def forward(self, input_):
+        output = gelu(input_)
+        return output
+
+
 class BertSelfAttention(nn.Module):
     def __init__(self, config):
         super(BertSelfAttention, self).__init__()
