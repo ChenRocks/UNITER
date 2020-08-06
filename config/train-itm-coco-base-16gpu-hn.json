@@ -1,0 +1,45 @@
+{
+    "compressed_db": false,
+    "checkpoint": "/pretrain/uniter-base.pt",
+    "output_dir": "/storage/itm/coco/hard_neg",
+    "max_txt_len": 60,
+    "conf_th": 0.2,
+    "max_bb": 100,
+    "min_bb": 10,
+    "num_bb": 36,
+    "train_batch_size": 8,
+    "negative_size": 399,
+    "hard_neg_size": 31,
+    "inf_minibatch_size": 400,
+    "margin": 0.2,
+    "learning_rate": 5e-05,
+    "valid_steps": 500,
+    "num_train_steps": 5000,
+    "optim": "adamw",
+    "betas": [
+        0.9,
+        0.98
+    ],
+    "dropout": 0.1,
+    "weight_decay": 0.01,
+    "grad_norm": 2.0,
+    "warmup_steps": 500,
+    "seed": 42,
+    "full_val": true,
+    "fp16": true,
+    "n_workers": 4,
+    "pin_mem": true,
+    "train_txt_dbs": [
+        "/txt/itm_coco_train.db",
+        "/txt/itm_coco_restval.db"
+    ],
+    "train_img_dbs": [
+        "/img/coco_train2014/",
+        "/img/coco_val2014"
+    ],
+    "val_txt_db": "/txt/itm_coco_val.db",
+    "val_img_db": "/img/coco_val2014/",
+    "test_txt_db": "/txt/itm_coco_test.db",
+    "test_img_db": "/img/coco_val2014/",
+    "model_config": "/src/config/uniter-base.json"
+}
