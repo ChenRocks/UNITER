@@ -12,8 +12,10 @@ done
 BLOB='https://convaisharables.blob.core.windows.net/uniter'
 
 # image db
-wget $BLOB/img_db/flickr30k.tar -P $DOWNLOAD/img_db/
-tar -xvf $DOWNLOAD/img_db/flickr30k.tar -C $DOWNLOAD/img_db
+if [ ! -d $DOWNLOAD/img_db/flickr30k ] ; then
+    wget $BLOB/img_db/flickr30k.tar -P $DOWNLOAD/img_db/
+    tar -xvf $DOWNLOAD/img_db/flickr30k.tar -C $DOWNLOAD/img_db
+fi
 
 # text dbs
 for SPLIT in 'train' 'dev' 'test'; do
