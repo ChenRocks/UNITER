@@ -1,7 +1,8 @@
 # UNITER: UNiversal Image-TExt Representation Learning
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
-It is currently an alpha release, which supports finetuning UNITER-base on the
-[NLVR2](http://lil.nlp.cornell.edu/nlvr/)  and [VQA](https://visualqa.org/) tasks.
+It is currently an alpha release, which supports finetuning UNITER-base on
+[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), and
+[SNLI-VE](https://github.com/necla-ml/SNLI-VE) tasks.
 We plan to release the large model and more downstream tasks but do not have a 
 time table as of now.
 
@@ -141,6 +142,18 @@ NOTE: train and inference should be ran inside the docker container
     ```
     The result file will be written at `$VQA_EXP/results_test/results_6000_all.json`, which can be
     submitted to the evaluation server
+
+### Visual Entailment (SNLI-VE)
+NOTE: train should be ran inside the docker container
+1. download data
+    ```
+    bash scripts/download_ve.sh $PATH_TO_STORAGE
+    ```
+2. train
+    ```
+    horovodrun -np 2 python train_ve.py --config config/train-ve-base-2gpu.json \
+        --output_dir $VE_EXP
+    ```
 
 ## Citation
 
