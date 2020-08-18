@@ -148,10 +148,14 @@ def broadcast_tensors(tensors, root_rank, buffer_size=10485760):
         broadcast_buffer()
 
 
-def _encode(enc, max_size):
+def _encode(enc, max_size, use_max_size=False):
     enc_size = len(enc)
     enc_byte = max(math.floor(math.log(max_size, 256)+1), 1)
-    buffer_ = torch.cuda.ByteTensor(enc_size+enc_byte)
+    if use_max_size:
+        # this is used for broadcasting
+        buffer_ = torch.cuda.ByteTensor(max_size+enc_byte)
+    else:
+        buffer_ = torch.cuda.ByteTensor(enc_size+enc_byte)
     remainder = enc_size
     for i in range(enc_byte):
         base = 256 ** (enc_byte-i-1)
@@ -196,7 +200,7 @@ def any_broadcast(data, root_rank):
     enc = pickle.dumps(data)
 
     max_size = hvd.allgather(torch.tensor([len(enc)]).cuda()).max().item()
-    buffer_, enc_byte = _encode(enc, max_size)
+    buffer_, enc_byte = _encode(enc, max_size, use_max_size=True)
 
     hvd.broadcast_(buffer_, root_rank)
 

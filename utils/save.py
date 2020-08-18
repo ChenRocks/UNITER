@@ -65,12 +65,6 @@ class ModelSaver(object):
                                  f"{self.prefix}_{step}.{self.suffix}")
         state_dict = {k: v.cpu() if isinstance(v, torch.Tensor) else v
                       for k, v in model.state_dict().items()}
-        if hasattr(model, 'vocab_pad') and model.vocab_pad:
-            # store vocab embeddings before padding
-            emb_w = state_dict['bert.embeddings.word_embeddings.weight']
-            emb_w = emb_w[:-model.vocab_pad, :]
-            state_dict['bert.embeddings.word_embeddings.weight'] = emb_w
-            state_dict['cls.predictions.decoder.weight'] = emb_w
         torch.save(state_dict, output_model_file)
         if optimizer is not None:
             dump = {'step': step, 'optimizer': optimizer.state_dict()}
