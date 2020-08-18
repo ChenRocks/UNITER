@@ -5,6 +5,7 @@ It is currently an alpha release, which supports finetuning UNITER-base on
 [SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
 Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
 [Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
+UNITER-base pre-training with in-domain data is also available now.
 We plan to release the large model and more downstream tasks but do not have a 
 time table as of now.
 
@@ -190,6 +191,18 @@ horovodrun -np $NGPU python inf_itm.py \
     horovodrun -np 16 python train_itm_hard_negatives.py \
         --config config/train-itm-coco-base-16gpu-hn.json
     ```
+
+## Pre-tranining
+download
+```
+bash scripts/download_indomain.sh $PATH_TO_STORAGE
+```
+pre-train
+```
+horovodrun -np 8 python pretrain.py --config config/pretrain-indomain-base-8gpu.json \
+    --output_dir $PRETRAIN_EXP
+```
+
 
 ## Citation
 
