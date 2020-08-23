@@ -10,5 +10,5 @@ fi
 BLOB='https://convaisharables.blob.core.windows.net/uniter'
 
 for MODEL in uniter-base uniter-large; do
-    wget $BLOB/pretrained/$MODEL.pt -P $DOWNLOAD/pretrained/$MODEL.pt
+    wget $BLOB/pretrained/$MODEL.pt -P $DOWNLOAD/pretrained/
 done
