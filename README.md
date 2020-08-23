@@ -1,13 +1,12 @@
 # UNITER: UNiversal Image-TExt Representation Learning
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
-It is currently an alpha release, which supports finetuning UNITER-base on
+This repository currently supports finetuning UNITER on
 [NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/),
 [SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
 Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
 [Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
-UNITER-base pre-training with in-domain data is also available now.
-We plan to release the large model and more downstream tasks but do not have a 
-time table as of now.
+Both UNITER-base and UNITER-large pre-trained checkpoints are released.
+UNITER-base pre-training with in-domain data is also available.
 
 ![Overview of UNITER](https://convaisharables.blob.core.windows.net/uniter/uniter_overview_v2.png)
 
@@ -32,7 +31,7 @@ We use mixed-precision training hence GPUs with Tensor Cores are recommended.
 
 ## Quick Start
 *NOTE*: Please run `bash scripts/download_pretrained $PATH_TO_STORAGE` to get our latest pretrained
-checkpoints.
+checkpoints. This will download both the base and large models.
 
 We use NLVR2 as an end-to-end example for using this code base.
 

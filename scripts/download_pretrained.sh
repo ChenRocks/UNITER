@@ -9,5 +9,6 @@ fi
 
 BLOB='https://convaisharables.blob.core.windows.net/uniter'
 
-
-wget $BLOB/pretrained/uniter-base.pt -P $DOWNLOAD/pretrained/uniter-base.pt
+for MODEL in uniter-base uniter-large; do
+    wget $BLOB/pretrained/$MODEL.pt -P $DOWNLOAD/pretrained/$MODEL.pt
+done
