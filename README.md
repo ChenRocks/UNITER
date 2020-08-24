@@ -30,7 +30,7 @@ We only support Linux with NVIDIA GPUs. We test on Ubuntu 18.04 and V100 cards.
 We use mixed-precision training hence GPUs with Tensor Cores are recommended.
 
 ## Quick Start
-*NOTE*: Please run `bash scripts/download_pretrained $PATH_TO_STORAGE` to get our latest pretrained
+*NOTE*: Please run `bash scripts/download_pretrained.sh $PATH_TO_STORAGE` to get our latest pretrained
 checkpoints. This will download both the base and large models.
 
 We use NLVR2 as an end-to-end example for using this code base.
