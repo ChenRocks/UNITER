@@ -6,6 +6,7 @@ helper for logging
 NOTE: loggers are global objects use with caution
 """
 import logging
+import math
 
 import tensorboardX
 
@@ -74,14 +75,18 @@ class RunningMeter(object):
         self._val = val
 
     def __call__(self, value):
-        self._val = (value if self._val is None
-                     else value*(1-self._sm) + self._val*self._sm)
+        val = (value if self._val is None
+               else value*(1-self._sm) + self._val*self._sm)
+        if not math.isnan(val):
+            self._val = val
 
     def __str__(self):
         return f'{self._name}: {self._val:.4f}'
 
     @property
     def val(self):
+        if self._val is None:
+            return 0
         return self._val
 
     @property
