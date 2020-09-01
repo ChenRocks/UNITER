@@ -10,5 +10,6 @@ fi
 BLOB='https://convaisharables.blob.core.windows.net/uniter'
 
 for MODEL in uniter-base uniter-large; do
-    wget $BLOB/pretrained/$MODEL.pt -P $DOWNLOAD/pretrained/
+    # This will overwrite models
+    wget $BLOB/pretrained/$MODEL.pt -O $DOWNLOAD/pretrained/$MODEL.pt
 done
