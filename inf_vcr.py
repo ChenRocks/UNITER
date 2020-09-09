@@ -92,6 +92,8 @@ def main(opts):
     LOGGER.info("device: {} n_gpu: {}, rank: {}, "
                 "16-bits training: {}".format(
                     device, n_gpu, hvd.rank(), opts.fp16))
+    if rank != 0:
+        LOGGER.disabled = True
 
     hps_file = f'{opts.output_dir}/log/hps.json'
     model_opts = Struct(json.load(open(hps_file)))
@@ -127,8 +129,8 @@ def main(opts):
             missing_keys.remove(key)
         else:
             unexpected_keys.add(key)
-    print("Unexpected_keys:", list(unexpected_keys))
-    print("Missing_keys:", list(missing_keys))
+    LOGGER.info(f"Unexpected_keys: {list(unexpected_keys)}")
+    LOGGER.info(f"Missing_keys: {list(missing_keys)}")
     model.load_state_dict(matched_state_dict, strict=False)
     model.to(device)
     if opts.fp16:
