@@ -238,7 +238,7 @@ def main(opts):
             n_examples += batch['input_ids'].size(0)
 
             loss = model(batch, compute_loss=True)
-            loss = loss.mean() * batch['targets'].size(1)  # instance-leval bce
+            loss = loss.mean()
             delay_unscale = (step+1) % opts.gradient_accumulation_steps != 0
             with amp.scale_loss(loss, optimizer, delay_unscale=delay_unscale
                                 ) as scaled_loss:
