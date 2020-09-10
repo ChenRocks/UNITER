@@ -48,10 +48,8 @@ def build_dataloader(dataset, collate_fn, is_train, opts):
                                 num_workers=opts.n_workers,
                                 pin_memory=opts.pin_mem, collate_fn=collate_fn)
     else:
-        sampler = DistributedSampler(
-            dataset, num_replicas=hvd.size(), rank=hvd.rank())
-        dataloader = DataLoader(dataset, sampler=sampler,
-                                num_workers=opts.n_workers,
+        dataloader = DataLoader(dataset, batch_size=batch_size,
+                                num_workers=opts.n_workers, shuffle=False,
                                 pin_memory=opts.pin_mem, collate_fn=collate_fn)
     dataloader = PrefetchLoader(dataloader)
     return dataloader
