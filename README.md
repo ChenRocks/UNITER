@@ -1,7 +1,7 @@
 # UNITER: UNiversal Image-TExt Representation Learning
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
 This repository currently supports finetuning UNITER on
-[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/),
+[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), [VCR](https://visualcommonsense.com/)
 [SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
 Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
 [Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
@@ -147,6 +147,25 @@ NOTE: train and inference should be ran inside the docker container
     ```
     The result file will be written at `$VQA_EXP/results_test/results_6000_all.json`, which can be
     submitted to the evaluation server
+
+### VCR
+NOTE: train and inference should be ran inside the docker container
+1. download data
+    ```
+    bash scripts/download_vcr.sh $PATH_TO_STORAGE
+    ```
+2. train
+    ```
+    horovodrun -np 4 python train_vcr.py --config config/train-vcr-base-4gpu.json \
+        --output_dir $VCR_EXP
+    ```
+3. inference
+    ```
+    horovodrun -np 4 python inf_vcr.py --txt_db /txt/vcr_test.db --img_db "/img/vcr_gt_test/;/img/vcr_test/" \
+        --output_dir $VCR_EXP --checkpoint 8000 --pin_mem --fp16
+    ```
+    The result file will be written at `$VCR_EXP/results_test/results_8000_all.csv`, which can be
+    submitted to VCR leaderboard for evluation.
 
 ### Visual Entailment (SNLI-VE)
 NOTE: train should be ran inside the docker container

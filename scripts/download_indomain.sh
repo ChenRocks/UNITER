@@ -34,7 +34,9 @@ for SPLIT in 'train' 'val'; do
 done
 
 # converted BERT
-if [ ! -f $DOWNLOAD/pretrained/uniter-base-init.pt ] ; then
-    wget $BLOB/pretrained/uniter-base-init.pt -P $DOWNLOAD/pretrained/
-fi
+for MODEL in base large; do
+    if [ ! -f $DOWNLOAD/pretrained/uniter-$MODEL-init.pt ] ; then
+        wget $BLOB/pretrained/uniter-$MODEL-init.pt -P $DOWNLOAD/pretrained/
+    fi
+done
 
