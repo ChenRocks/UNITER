@@ -220,6 +220,8 @@ pre-train
 horovodrun -np 8 python pretrain.py --config config/pretrain-indomain-base-8gpu.json \
     --output_dir $PRETRAIN_EXP
 ```
+Unfortunately, we cannot host CC/SBU features due to their large size. Users will need to process
+them on their own. We will provide a smaller sample for easier reference to the expected format soon.
 
 
 ## Citation
