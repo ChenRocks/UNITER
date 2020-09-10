@@ -1,7 +1,7 @@
 # UNITER: UNiversal Image-TExt Representation Learning
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
 This repository currently supports finetuning UNITER on
-[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), [VCR](https://visualcommonsense.com/)
+[NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), [VCR](https://visualcommonsense.com/),
 [SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
 Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
 [Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
