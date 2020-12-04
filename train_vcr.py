@@ -7,14 +7,13 @@ UNITER finetuning for VCR
 import argparse
 import json
 import os
-from os.path import abspath, dirname, exists, join
+from os.path import exists, join
 from time import time
 
 import torch
 from torch.nn import functional as F
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
 from torch.optim import Adam, Adamax
 
 from apex import amp
@@ -48,10 +47,8 @@ def build_dataloader(dataset, collate_fn, is_train, opts):
                                 num_workers=opts.n_workers,
                                 pin_memory=opts.pin_mem, collate_fn=collate_fn)
     else:
-        sampler = DistributedSampler(
-            dataset, num_replicas=hvd.size(), rank=hvd.rank())
-        dataloader = DataLoader(dataset, sampler=sampler,
-                                num_workers=opts.n_workers,
+        dataloader = DataLoader(dataset, batch_size=batch_size,
+                                num_workers=opts.n_workers, shuffle=False,
                                 pin_memory=opts.pin_mem, collate_fn=collate_fn)
     dataloader = PrefetchLoader(dataloader)
     return dataloader
@@ -153,7 +150,8 @@ def main(opts):
     train_dataloader = build_dataloader(train_dataset, vcr_collate, True, opts)
     # val
     LOGGER.info(f"Loading Val Dataset {opts.val_txt_db}, {opts.val_img_db}")
-    val_img_db, val_img_db_gt = load_img_feat(opts.val_img_db, all_img_dbs, opts)
+    val_img_db, val_img_db_gt = load_img_feat(
+        opts.val_img_db, all_img_dbs, opts)
     val_txt_db = VcrTxtTokLmdb(opts.val_txt_db, -1)
     val_dataset = VcrEvalDataset(
         "val", val_txt_db, img_db=val_img_db, img_db_gt=val_img_db_gt)
@@ -290,7 +288,7 @@ def main(opts):
                                 f'{ex_per_sec} ex/s')
                     TB_LOGGER.add_scalar('perf/ex_per_s',
                                          ex_per_sec, global_step)
-                    LOGGER.info(f'===========================================')
+                    LOGGER.info('===========================================')
 
                 if global_step % opts.valid_steps == 0:
                     val_log, results = validate(
@@ -350,9 +348,13 @@ def validate(model, val_loader):
         vcr_qa_loss = F.cross_entropy(
                 scores[:, :4], qa_targets.squeeze(-1), reduction="sum")
         if scores.shape[1] > 8:
-            qar_index = [4+answer_ind.item()*4+i for answer_ind in qa_targets
-                         for i in range(4)]
-            qar_scores = scores[:, qar_index]
+            qar_scores = []
+            for batch_id in range(scores.shape[0]):
+                answer_ind = qa_targets[batch_id].item()
+                qar_index = [4+answer_ind*4+i
+                             for i in range(4)]
+                qar_scores.append(scores[batch_id, qar_index])
+            qar_scores = torch.stack(qar_scores, dim=0)
         else:
             qar_scores = scores[:, 4:]
         vcr_qar_loss = F.cross_entropy(

@@ -8,6 +8,7 @@ from time import time
 import torch
 from torch.utils.data import DataLoader
 from apex import amp
+from horovod import torch as hvd
 
 from data import (DetectFeatLmdb, TxtTokLmdb,
                   PrefetchLoader, TokenBucketSampler,
@@ -22,6 +23,7 @@ from utils.const import IMG_DIM, BUCKET_SIZE
 
 
 def main(opts):
+    hvd.init()
     device = torch.device("cuda")  # support single GPU only
     train_opts = Struct(json.load(open(f'{opts.train_dir}/log/hps.json')))
 
@@ -89,7 +91,7 @@ def evaluate(model, eval_loader, device):
         qids = batch['qids']
         del batch['targets']
         del batch['qids']
-        scores = model(**batch, targets=None, compute_loss=False)
+        scores = model(batch, compute_loss=False)
         answers = ['True' if i == 1 else 'False'
                    for i in scores.max(dim=-1, keepdim=False
                                        )[1].cpu().tolist()]

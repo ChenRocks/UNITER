@@ -169,6 +169,18 @@ NOTE: train and inference should be ran inside the docker container
     The result file will be written at `$VCR_EXP/results_test/results_8000_all.csv`, which can be
     submitted to VCR leaderboard for evluation.
 
+### VCR 2nd Stage Pre-training
+NOTE: pretrain should be ran inside the docker container
+1. download VCR data if you haven't
+    ```
+    bash scripts/download_vcr.sh $PATH_TO_STORAGE
+    ```
+2. 2nd stage pre-train
+    ```
+    horovodrun -np 4 python pretrain_vcr.py --config config/pretrain-vcr-base-4gpu.json \
+        --output_dir $PRETRAIN_VCR_EXP
+    ```
+
 ### Visual Entailment (SNLI-VE)
 NOTE: train should be ran inside the docker container
 1. download data

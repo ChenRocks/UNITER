@@ -136,13 +136,11 @@ def main(opts):
     if opts.fp16:
         model = amp.initialize(model, enabled=True, opt_level='O2')
 
-    sampler = DistributedSampler(
-        eval_dataset, num_replicas=n_gpu, rank=rank)
     eval_dataloader = DataLoader(eval_dataset,
                                  batch_size=opts.batch_size,
-                                 sampler=sampler,
                                  num_workers=opts.n_workers,
                                  pin_memory=opts.pin_mem,
+                                 shuffle=False,
                                  collate_fn=vcr_eval_collate)
     eval_dataloader = PrefetchLoader(eval_dataloader)
 

@@ -35,7 +35,7 @@ class VcrTxtTokLmdb(TxtTokLmdb):
                     ).items()
                 if len_ <= max_txt_len
             }
-        
+
         self.db_dir = db_dir
         self.db = TxtLmdb(db_dir, readonly=True)
         meta = json.load(open(f'{db_dir}/meta.json', 'r'))
