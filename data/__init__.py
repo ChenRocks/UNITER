@@ -24,6 +24,5 @@ from .mlm import MlmDataset, mlm_collate
 from .mrm import MrfrDataset, MrcDataset, mrfr_collate, mrc_collate
 from .vcr import (VcrTxtTokLmdb, VcrDataset, VcrEvalDataset,
                   vcr_collate, vcr_eval_collate)
-from .pretrain_vcr import(MrcDatasetForVCR, mrc_collate_for_vcr,
-                          MrfrDatasetForVCR, mrfr_collate_for_vcr,
-                          MlmDatasetForVCR, mlm_collate_for_vcr)
+from .re import (ReTxtTokLmdb, ReDataset, ReEvalDataset,
+                 re_collate, re_eval_collate)
