@@ -34,7 +34,7 @@ for SPLIT in 'train' 'dev' 'test1'; do
         -w /src chenrocks/uniter \
         python prepro.py --annotation /ann/$SPLIT.json \
                          --missing_imgs /ann/missing_nlvr2_imgs.json \
-                         --output /txt_db/nlvr2_${SPLIT}.db
+                         --output /txt_db/nlvr2_${SPLIT}.db --task nlvr2
 done
 
 echo "done"

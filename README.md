@@ -2,9 +2,10 @@
 This is the official repository of [UNITER](https://arxiv.org/abs/1909.11740) (ECCV 2020).
 This repository currently supports finetuning UNITER on
 [NLVR2](http://lil.nlp.cornell.edu/nlvr/), [VQA](https://visualqa.org/), [VCR](https://visualcommonsense.com/),
-[SNLI-VE](https://github.com/necla-ml/SNLI-VE), and
+[SNLI-VE](https://github.com/necla-ml/SNLI-VE), 
 Image-Text Retrieval for [COCO](https://cocodataset.org/#home) and
-[Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/).
+[Flickr30k](http://shannon.cs.illinois.edu/DenotationGraph/), and
+[Referring Expression Comprehensions](https://github.com/lichengunc/refer) (RefCOCO, RefCOCO+, and RefCOCO-g).
 Both UNITER-base and UNITER-large pre-trained checkpoints are released.
 UNITER-base pre-training with in-domain data is also available.
 
@@ -223,6 +224,24 @@ horovodrun -np $NGPU python inf_itm.py \
     horovodrun -np 16 python train_itm_hard_negatives.py \
         --config config/train-itm-coco-base-16gpu-hn.json
     ```
+### Referring Expressions
+1. download data
+    ```
+    bash scripts/download_re.sh $PATH_TO_STORAGE
+    ```
+2. train
+    ```
+    python train_re.py --config config/train-refcoco-base-1gpu.json \
+        --output_dir $RE_EXP
+    ```
+3. inference and evaluation
+    ```
+    source scripts/eval_refcoco.sh $RE_EXP
+    ```
+    The result files will be written under `$RE_EXP/results_test/`
+
+Similarly, change corresponding configs/scripts for running RefCOCO+/RefCOCOg.
+
 
 ## Pre-tranining
 download
