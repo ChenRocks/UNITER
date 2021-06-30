@@ -14,7 +14,7 @@ if [ ! -d $ANN_DIR ]; then
     mkdir -p $ANN_DIR
 fi
 
-BLOB='https://convaisharables.blob.core.windows.net/uniter'
+BLOB='https://acvrpublicycchen.blob.core.windows.net/uniter'
 MISSING=$BLOB/ann/missing_nlvr2_imgs.json
 if [ ! -f $ANN_DIR/missing_nlvr2_imgs.json ]; then
     wget $MISSING -O $ANN_DIR/missing_nlvr2_imgs.json

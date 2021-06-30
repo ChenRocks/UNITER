@@ -9,7 +9,7 @@ for FOLDER in 'img_db' 'txt_db' 'pretrained' 'finetune'; do
     fi
 done
 
-BLOB='https://convaisharables.blob.core.windows.net/uniter'
+BLOB='https://acvrpublicycchen.blob.core.windows.net/uniter'
 
 # image dbs
 for SPLIT in 'train2014' 'val2014'; do

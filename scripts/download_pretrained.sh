@@ -7,7 +7,7 @@ if [ ! -d $DOWNLOAD/pretrained ] ; then
     mkdir -p $DOWNLOAD/pretrained
 fi
 
-BLOB='https://convaisharables.blob.core.windows.net/uniter'
+BLOB='https://acvrpublicycchen.blob.core.windows.net/uniter'
 
 for MODEL in uniter-base uniter-large; do
     # This will overwrite models

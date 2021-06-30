@@ -9,7 +9,7 @@ for FOLDER in 'ann' 'img_db' 'txt_db' 'pretrained' 'finetune'; do
     fi
 done
 
-BLOB='https://convaisharables.blob.core.windows.net/uniter'
+BLOB='https://acvrpublicycchen.blob.core.windows.net/uniter'
 
 # annotations
 NLVR='https://raw.githubusercontent.com/lil-lab/nlvr/master/nlvr2/data'
