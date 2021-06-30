@@ -18,9 +18,9 @@ for SPLIT in 'train2014' 'val2014'; do
         tar -xvf $DOWNLOAD/img_db/coco_$SPLIT.tar -C $DOWNLOAD/img_db
     fi
 done
-if [ ! -d $DOWNLOAD/img_db/flickr30k ] ; then
-    wget $BLOB/img_db/flickr30k.tar -P $DOWNLOAD/img_db/
-    tar -xvf $DOWNLOAD/img_db/flickr30k.tar -C $DOWNLOAD/img_db
+if [ ! -d $DOWNLOAD/img_db/vg ] ; then
+    wget $BLOB/img_db/vg.tar -P $DOWNLOAD/img_db/
+    tar -xvf $DOWNLOAD/img_db/vg.tar -C $DOWNLOAD/img_db
 fi
 
 # text dbs
